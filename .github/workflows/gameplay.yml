@@ -23,9 +23,11 @@ jobs:
         env:
           RUN_MODE: github
 
-      - name: Subir videos como artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gameplay-videos-${{ github.run_number }}
-          path: ~/gameplay_slither/gameplay_final_*.mp4
-          retention-days: 7
+      - name: Instalar rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Subir videos a Drive
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "${{ secrets.RCLONE_CONF }}" > ~/.config/rclone/rclone.conf
+          rclone copy ~/gameplay_slither/ gdrive:gameplay_videos --include "gameplay_final_*.mp4"
