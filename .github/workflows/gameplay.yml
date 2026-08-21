@@ -32,4 +32,4 @@ jobs:
           cat > ~/.config/rclone/rclone.conf <<'CONFEOF'
           ${{ secrets.RCLONE_CONF }}
           CONFEOF
-          rclone copy ~/gameplay_slither/ gdrive:gameplay_videos --include "gameplay_final_*.mp4"
+          rclone copy ~/gameplay_slither/ gdrive:gameplay_videos/run_${{ github.run_number }} --include "gameplay_final_*.mp4"
