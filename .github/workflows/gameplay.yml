@@ -29,5 +29,7 @@ jobs:
       - name: Subir videos a Drive
         run: |
           mkdir -p ~/.config/rclone
-          echo "${{ secrets.RCLONE_CONF }}" > ~/.config/rclone/rclone.conf
+          cat > ~/.config/rclone/rclone.conf <<'CONFEOF'
+          ${{ secrets.RCLONE_CONF }}
+          CONFEOF
           rclone copy ~/gameplay_slither/ gdrive:gameplay_videos --include "gameplay_final_*.mp4"
