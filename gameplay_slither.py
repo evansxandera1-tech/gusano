@@ -201,7 +201,7 @@ def build_audio_track(eat_events_all, total_frames, fps, out_wav):
 # ============ PIPELINE: 1 video ============
 def generar_un_video(video_num, left_vid, right_vid):
     from PIL import Image
-    output_path = os.path.join(BASE_DIR, f"gameplay_final_{video_num}.mp4")
+    output_path = os.path.join(BASE_DIR, f"gameplay_final_r{get_run_number()}_{video_num}.mp4")
     audio_path = os.path.join(BASE_DIR, f"audio_{video_num}.wav")
 
     for fn in os.listdir(FRAMES_DIR):
