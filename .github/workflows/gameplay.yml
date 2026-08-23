@@ -18,7 +18,7 @@ jobs:
       - name: Configurar rclone
         run: |
           mkdir -p ~/.config/rclone
-          echo "${{ secrets.RCLONE_CONFIG }}" | base64 -d > ~/.config/rclone/rclone.conf
+          echo "${{ secrets.RCLONE_CONF }}" | base64 -d > ~/.config/rclone/rclone.conf
 
       - name: Verificar espacio usado en Drive
         id: check_space
