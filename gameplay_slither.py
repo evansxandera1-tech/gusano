@@ -282,6 +282,7 @@ def generar_un_video(video_num, left_vid, right_vid, run_number):
         os.remove(os.path.join(FRAMES_DIR, fn))
 
     log(f"Video {video_num} listo: {output_path}")
+    video_size = os.path.getsize(output_path)
     try:
         subprocess.run(
             ["rclone", "copy", output_path, "gdrive:gameplay_slither", "--no-traverse"],
@@ -293,6 +294,7 @@ def generar_un_video(video_num, left_vid, right_vid, run_number):
     except Exception as e:
         log(f"ERROR subiendo video {video_num} a Drive: {e}")
     STATE["completed"].append(f"gameplay_final_run{run_number}_{video_num}.mp4")
+    return video_size
 
 # ============ PIPELINE COMPLETO ============
 def generar_todo():
@@ -301,13 +303,19 @@ def generar_todo():
         base_idx = (run_number - 1) * N_VIDEOS
         log(f"=== Run #{run_number} | {N_VIDEOS} videos de {DURATION_MIN} min ===")
 
-        for v in range(1, N_VIDEOS + 1):
+        TARGET_BYTES = 2 * 1024**3
+        v = 1
+        total_bytes = 0
+        while total_bytes < TARGET_BYTES:
             STATE["current_video"] = v
             STATE["status"] = f"video {v}: generando frames"
             global_idx = (base_idx + (v - 1)) % N_VARIANTS
             left_vid = global_idx
             right_vid = (global_idx + PAIR_OFFSET) % N_VARIANTS
-            generar_un_video(v, left_vid, right_vid, run_number)
+            video_size = generar_un_video(v, left_vid, right_vid, run_number)
+            total_bytes += video_size
+            log(f"Progreso tanda: {total_bytes/1024/1024:.0f} MB / 2048 MB")
+            v += 1
 
         STATE["progress"] = 100
         STATE["status"] = "completo"
@@ -362,5 +370,10 @@ if __name__ == "__main__":
         generar_todo()
     else:
         log("Servidor iniciado. Generación automática arrancando...")
-        threading.Thread(target=generar_todo, daemon=True).start()
+        def generar_en_loop():
+            while True:
+                generar_todo()
+                log("Esperando 3 horas para la proxima tanda...")
+                time.sleep(3 * 60 * 60)
+        threading.Thread(target=generar_en_loop, daemon=True).start()
         app.run(host="0.0.0.0", port=8080)
