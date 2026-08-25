@@ -1,0 +1,59 @@
+name: Generar Gameplay Slither
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */3 * * *'
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configurar rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          echo "${{ secrets.RCLONE_CONF }}" | base64 -d > ~/.config/rclone/rclone.conf
+
+      - name: Verificar espacio usado en Drive
+        id: check_space
+        run: |
+          BYTES=$(rclone size gdrive:gusanito --json | grep -o '"bytes":[0-9]*' | grep -o '[0-9]*')
+          echo "Bytes usados: $BYTES"
+          LIMITE=1073741824
+          if [ "$BYTES" -ge "$LIMITE" ]; then
+            echo "lleno=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "lleno=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar ffmpeg
+        if: steps.check_space.outputs.lleno == 'false'
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Instalar dependencias Python
+        if: steps.check_space.outputs.lleno == 'false'
+        run: pip install flask pillow numpy
+
+      - name: Generar videos
+        if: steps.check_space.outputs.lleno == 'false'
+        run: python gameplay_slither.py
+        env:
+          RUN_MODE: github
+
+      - name: Subir videos como artifact
+        if: steps.check_space.outputs.lleno == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplay-videos-${{ github.run_number }}
+          path: ~/gameplay_slither/gameplay_final_*.mp4
+          retention-days: 7
+
+      - name: Subir videos a Google Drive
+        if: steps.check_space.outputs.lleno == 'false'
+        run: rclone copy ~/gameplay_slither/ gdrive:gusanito --include "gameplay_final_*.mp4" -v
