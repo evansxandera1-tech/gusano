@@ -13,11 +13,7 @@ CELL = 30
 COLS = HALF_W // CELL
 ROWS = H // CELL
 FPS = 20
-<<<<<<< HEAD
 DURATION_MIN = 10
-=======
-DURATION_MIN = 10
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 FRAMES_PER_VIDEO = DURATION_MIN * 60 * FPS
 N_VIDEOS = 5
 
@@ -26,14 +22,10 @@ OUTLINE = (20, 15, 40)
 FOOD_COLOR = (255, 40, 120)
 FOOD_OUTLINE = (255, 255, 255)
 
-<<<<<<< HEAD
 THRESHOLDS = [0.90]
 
-HUE_CYCLE_SECONDS = 8  # tiempo para completar una vuelta de color (transicion continua)
+HUE_CYCLE_SECONDS = 20  # tiempo para completar una vuelta de color (transicion continua)
 BG_REGEN_EVERY = 6      # cada cuantos frames se re-dibuja el fondo (perf)
-=======
-THRESHOLDS = [0.30, 0.60, 0.85, 0.90]
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 
 # ============ SISTEMA DE 50 VARIANTES (golden angle, sin guardar estado) ============
 N_VARIANTS = 50
@@ -47,24 +39,14 @@ def get_run_number():
     # fallback si corre local/Termux sin GitHub Actions: varía cada hora
     return int(time.time()) // 3600
 
-<<<<<<< HEAD
 def variant_palette(vid, shift=0.0):
     hue = (vid * GOLDEN + shift) % 1.0
-=======
-def variant_palette(vid):
-    hue = (vid * GOLDEN) % 1.0
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
     def rgb(h, s, v):
         r, g, b = colorsys.hsv_to_rgb(h % 1.0, s, v)
         return (int(r*255), int(g*255), int(b*255))
     return {
-<<<<<<< HEAD
         "bg":   rgb(hue, 0.55, 0.35),
         "body": rgb(hue + 0.50, 0.80, 0.95),
-=======
-        "bg":   rgb(hue, 0.55, 0.22),
-        "body": rgb(hue + 0.50, 0.75, 0.85),
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
         "head": rgb(hue + 0.15, 0.85, 1.00),
     }
 
@@ -90,7 +72,6 @@ STATE = {
 
 # ============ JUEGO ============
 class Game:
-<<<<<<< HEAD
     def __init__(self, seed, vid):
         self.rng = random.Random(seed)
         self.total_cells = COLS * ROWS
@@ -98,13 +79,6 @@ class Game:
         self.vid = vid
         self.palette = variant_palette(vid)
         self.last_color_period = 0
-=======
-    def __init__(self, seed, palette):
-        self.rng = random.Random(seed)
-        self.total_cells = COLS * ROWS
-        self.threshold_idx = 0
-        self.palette = palette
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
         self.eat_events = []
         self.reset()
 
@@ -129,7 +103,6 @@ class Game:
     def nearest_food(self, head):
         return min(self.foods, key=lambda f: (f[0]-head[0])**2 + (f[1]-head[1])**2)
 
-<<<<<<< HEAD
     def _free_space(self, start, body):
         from collections import deque
         visited = {start}
@@ -147,10 +120,6 @@ class Game:
         body = set(self.snake[:-1])
         tail_free = set(self.snake[:1]) - {head}
         body_for_space = body - tail_free
-=======
-    def bot_move(self, head, mistake_chance=0.02):
-        body = set(self.snake[:-1])
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
         tx, ty = self.nearest_food(head)
         DIRS = [(1,0),(-1,0),(0,1),(0,-1)]
         valid = []
@@ -161,7 +130,6 @@ class Game:
         if self.rng.random() < mistake_chance and valid:
             return self.rng.choice(valid)
         if valid:
-<<<<<<< HEAD
             min_space = len(self.snake) + 5
             safe = []
             for d in valid:
@@ -181,15 +149,6 @@ class Game:
         self.palette = variant_palette(self.vid, shift)
         if frame_idx % BG_REGEN_EVERY == 0:
             self.bg_img = self._make_bg()
-=======
-            def score(d):
-                nx, ny = head[0]+d[0], head[1]+d[1]
-                return (nx-tx)**2 + (ny-ty)**2
-            return min(valid, key=score)
-        return self.direction
-
-    def step(self, frame_idx):
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
         target_fill = THRESHOLDS[self.threshold_idx] * self.total_cells
         head = self.snake[-1]
         self.direction = self.bot_move(head)
@@ -272,29 +231,17 @@ def build_audio_track(eat_events_all, total_frames, fps, out_wav):
     os.remove(beep_path)
 
 # ============ PIPELINE: 1 video ============
-<<<<<<< HEAD
 def generar_un_video(video_num, left_vid, right_vid, run_number):
     from PIL import Image
     output_path = os.path.join(BASE_DIR, f"gameplay_final_run{run_number}_{video_num}.mp4")
     audio_path = os.path.join(BASE_DIR, f"audio_run{run_number}_{video_num}.wav")
-=======
-def generar_un_video(video_num, left_vid, right_vid):
-    from PIL import Image
-    output_path = os.path.join(BASE_DIR, f"gameplay_final_r{get_run_number()}_{video_num}.mp4")
-    audio_path = os.path.join(BASE_DIR, f"audio_{video_num}.wav")
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 
     for fn in os.listdir(FRAMES_DIR):
         os.remove(os.path.join(FRAMES_DIR, fn))
 
     log(f"--- Video {video_num}/{N_VIDEOS} | variante izq={left_vid} der={right_vid} ---")
-<<<<<<< HEAD
     game_left = Game(seed=random.randint(1,9999), vid=left_vid)
     game_right = Game(seed=random.randint(1,9999), vid=right_vid)
-=======
-    game_left = Game(seed=random.randint(1,9999), palette=variant_palette(left_vid))
-    game_right = Game(seed=random.randint(1,9999), palette=variant_palette(right_vid))
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 
     for i in range(FRAMES_PER_VIDEO):
         game_left.step(i)
@@ -335,11 +282,17 @@ def generar_un_video(video_num, left_vid, right_vid):
         os.remove(os.path.join(FRAMES_DIR, fn))
 
     log(f"Video {video_num} listo: {output_path}")
-<<<<<<< HEAD
+    try:
+        subprocess.run(
+            ["rclone", "copy", output_path, "gdrive:gameplay_slither", "--no-traverse"],
+            check=True, capture_output=True, text=True
+        )
+        log(f"Video {video_num} subido a Drive")
+        os.remove(output_path)
+        log(f"Video {video_num} borrado localmente tras subir")
+    except Exception as e:
+        log(f"ERROR subiendo video {video_num} a Drive: {e}")
     STATE["completed"].append(f"gameplay_final_run{run_number}_{video_num}.mp4")
-=======
-    STATE["completed"].append(f"gameplay_final_{video_num}.mp4")
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 
 # ============ PIPELINE COMPLETO ============
 def generar_todo():
@@ -354,11 +307,7 @@ def generar_todo():
             global_idx = (base_idx + (v - 1)) % N_VARIANTS
             left_vid = global_idx
             right_vid = (global_idx + PAIR_OFFSET) % N_VARIANTS
-<<<<<<< HEAD
             generar_un_video(v, left_vid, right_vid, run_number)
-=======
-            generar_un_video(v, left_vid, right_vid)
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
 
         STATE["progress"] = 100
         STATE["status"] = "completo"
@@ -377,25 +326,15 @@ app = Flask(__name__)
 def home():
     with open(LOG_PATH, encoding="utf-8") as f:
         log_lines = f.readlines()[-40:]
-<<<<<<< HEAD
     log_html = "<br>".join(l.strip() for l in reversed(log_lines))
-=======
-    log_html = "<br>".join(l.strip() for l in log_lines)
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
     links_html = "".join(
         f'<p><a href="/descargar/{n}" style="font-size:18px;">⬇️ Descargar video {n}</a></p>'
         for n in STATE["completed"]
     )
     return f"""
-<<<<<<< HEAD
     <html><head><meta charset="utf-8"><title>Gameplay Slither v1.7</title></head>
     <body style="font-family:sans-serif; background:#111; color:#eee; padding:20px;">
-    <h2>🐍 Generador de Gameplay (Slither grid) — v1.3</h2>
-=======
-    <html><head><meta charset="utf-8"><title>Gameplay Slither v1.7</title></head>
-    <body style="font-family:sans-serif; background:#111; color:#eee; padding:20px;">
-    <h2>🐍 Generador de Gameplay (Slither grid) — v1.2</h2>
->>>>>>> d4a78630533f767c197e7fa499f518e1392f884f
+    <h2>🐍 Generador de Gameplay (Slither grid) — v1.7</h2>
     <p><b>Estado:</b> {STATE['status']} — video {STATE['current_video']}/{STATE['total_videos']} — {STATE['progress']}%</p>
     {links_html}
     <h3>Log</h3>
