@@ -8,7 +8,7 @@ BASE_DIR = os.path.expanduser("~/gameplay_slither")
 FRAMES_DIR = os.path.join(BASE_DIR, "frames")
 LOG_PATH = os.path.join(BASE_DIR, "log.txt")
 
-W, H = 1920, 1080
+W, H = 1600, 900
 HALF_W = W // 2
 CELL = 30
 COLS = HALF_W // CELL
@@ -454,7 +454,7 @@ def generar_un_video(video_num, left_vid, right_vid, wall_idx, run_number):
         "-framerate", str(FPS),
         "-i", os.path.join(FRAMES_DIR, "frame_%05d.png"),
         "-i", audio_path,
-        "-c:v", "libx264", "-crf", "27", "-preset", "medium",
+        "-c:v", "libx264", "-crf", "29", "-preset", "slow",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-shortest",
         output_path
@@ -531,9 +531,9 @@ def home():
         for n in STATE["completed"]
     )
     return f"""
-    <html><head><meta charset="utf-8"><title>Gameplay Slither v2.0</title></head>
+    <html><head><meta charset="utf-8"><title>Gameplay Slither v2.2</title></head>
     <body style="font-family:sans-serif; background:#111; color:#eee; padding:20px;">
-    <h2>🐍 Generador de Gameplay (Slither grid) — v2.0</h2>
+    <h2>🐍 Generador de Gameplay (Slither grid) — v2.2</h2>
     <p><b>Estado:</b> {STATE['status']} — video {STATE['current_video']}/{STATE['total_videos']} — {STATE['progress']}%</p>
     {links_html}
     <h3>Log</h3>
